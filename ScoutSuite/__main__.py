@@ -53,6 +53,7 @@ def run_from_cli():
                    # GCP
                    project_id=args.get('project_id'), folder_id=args.get('folder_id'),
                    organization_id=args.get('organization_id'), all_projects=args.get('all_projects'),
+                   projects_file=args.get('projects_file'),
                    # Aliyun
                    access_key_id=args.get('access_key_id'), access_key_secret=args.get('access_key_secret'),
                    # Kubernetes
@@ -108,7 +109,7 @@ def run(provider,
         subscription_ids=None, all_subscriptions=None,
         # GCP
         service_account=None,
-        project_id=None, folder_id=None, organization_id=None, all_projects=False,
+        project_id=None, folder_id=None, organization_id=None, all_projects=False, projects_file=None,
         # Aliyun
         access_key_id=None, access_key_secret=None,
         # Kubernetes
@@ -170,7 +171,7 @@ async def _run(provider,
                username, password,
                # GCP
                service_account,
-               project_id, folder_id, organization_id, all_projects,
+               project_id, folder_id, organization_id, all_projects, projects_file,
                # Aliyun
                access_key_id, access_key_secret,
                # Kubernetes
@@ -265,6 +266,7 @@ async def _run(provider,
                                       folder_id=folder_id,
                                       organization_id=organization_id,
                                       all_projects=all_projects,
+                                      projects_file=projects_file,
                                       # Kubernetes
                                       kubernetes_config_file=kubernetes_config_file,
                                       kubernetes_context=kubernetes_context,

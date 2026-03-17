@@ -22,7 +22,8 @@ from ScoutSuite.utils import format_service_name
 
 class GCPFacade(GCPBaseFacade):
     def __init__(self,
-                 default_project_id=None, project_id=None, folder_id=None, organization_id=None, all_projects=None):
+                 default_project_id=None, project_id=None, folder_id=None, organization_id=None, all_projects=None,
+                 projects_file=None):
         super().__init__('cloudresourcemanager', 'v1')
 
         self.default_project_id = default_project_id
@@ -30,6 +31,7 @@ class GCPFacade(GCPBaseFacade):
         self.project_id = project_id
         self.folder_id = folder_id
         self.organization_id = organization_id
+        self.projects_file = projects_file
 
         self.cloudresourcemanager = CloudResourceManagerFacade()
         self.cloudsql = CloudSQLFacade()
@@ -56,8 +58,11 @@ class GCPFacade(GCPBaseFacade):
 
     async def get_projects(self):
         try:
+            # Projects file passed through the CLI
+            if self.projects_file:
+                return await self._get_projects_from_file(self.projects_file)
             # All projects to which the user / Service Account has access to
-            if self.all_projects:
+            elif self.all_projects:
                 return await self._get_projects_recursively(
                     parent_type='all', parent_id=None)
             # Project passed through the CLI
@@ -85,6 +90,33 @@ class GCPFacade(GCPBaseFacade):
         except Exception as e:
             print_exception(f'Failed to retrieve projects: {e}')
             return []
+
+    async def _get_projects_from_file(self, projects_file):
+        """
+        Reads project IDs from a text file (one per line) and retrieves their details.
+        """
+        projects = []
+        try:
+            with open(projects_file, 'r') as f:
+                project_ids = [line.strip() for line in f if line.strip() and not line.strip().startswith('#')]
+
+            if not project_ids:
+                print_info(f'No project IDs found in {projects_file}')
+                return []
+
+            print_info(f'Loading {len(project_ids)} projects from {projects_file}')
+
+            for project_id in project_ids:
+                project_results = await self._get_projects_recursively(
+                    parent_type='project', parent_id=project_id)
+                projects.extend(project_results)
+
+        except FileNotFoundError:
+            print_exception(f'Projects file not found: {projects_file}')
+        except Exception as e:
+            print_exception(f'Error reading projects file: {e}')
+
+        return projects
 
     async def _get_projects_recursively(self, parent_type, parent_id):
         """

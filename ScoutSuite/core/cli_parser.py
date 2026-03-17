@@ -131,6 +131,11 @@ class ScoutSuiteArgumentParser:
                                action='store_true',
                                help='Scan all of the accessible projects')
 
+        gcp_scope.add_argument('--projects-file',
+                               action='store',
+                               metavar='FILE',
+                               help='Path to a text file containing GCP project IDs to scan (one per line)')
+
     def _init_azure_parser(self):
         parser = self.subparsers.add_parser("azure",
                                             parents=[self.common_providers_args_parser],

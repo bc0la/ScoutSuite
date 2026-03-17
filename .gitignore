@@ -58,6 +58,10 @@ report-*
 # Vs Code
 .vscode/
 
+# Claude Code
+.claude/
+CLAUDE.md
+
 # Mac cruft
 .DS_Store
 

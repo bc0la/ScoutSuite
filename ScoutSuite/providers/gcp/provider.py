@@ -11,7 +11,7 @@ class GCPProvider(BaseProvider):
     """
 
     def __init__(self,
-                 project_id=None, folder_id=None, organization_id=None, all_projects=None,
+                 project_id=None, folder_id=None, organization_id=None, all_projects=None, projects_file=None,
                  report_dir=None, timestamp=None, services=None, skipped_services=None, result_format='json', **kwargs):
         services = [] if services is None else services
         skipped_services = [] if skipped_services is None else skipped_services
@@ -27,12 +27,14 @@ class GCPProvider(BaseProvider):
         self.project_id = project_id
         self.folder_id = folder_id
         self.organization_id = organization_id
+        self.projects_file = projects_file
 
         self.credentials = kwargs['credentials']
         self._set_account_id()
 
         self.services = GCPServicesConfig(self.credentials, self.credentials.default_project_id,
-                                          self.project_id, self.folder_id, self.organization_id, self.all_projects)
+                                          self.project_id, self.folder_id, self.organization_id, self.all_projects,
+                                          projects_file=self.projects_file)
 
         self.result_format = result_format
 
@@ -49,8 +51,11 @@ class GCPProvider(BaseProvider):
             return 'gcp'
 
     def _set_account_id(self):
+        # Projects file
+        if self.projects_file:
+            self.account_id = 'projects-file'
         # All accessible projects
-        if self.all_projects:
+        elif self.all_projects:
             # Service Account
             if self.credentials.is_service_account and hasattr(self.credentials, 'service_account_email'):
                 self.account_id = self.credentials.service_account_email
